@@ -49,8 +49,8 @@ FPIC_FLAG := -fPIC
 SHARED_FLAG := -shared
 
 ##Libraries and LD flags used for linking test binaries
-LIB_NAME := liblogger
-DBG_LIB_NAME := liblogger_d
+LIB_NAME := libtppol
+DBG_LIB_NAME := libtppol_d
 
 ifeq ($(LIB_TYPE), static)	# If it has to be a static lib
 LD_FLAGS := -L$(LIB_DIR) -l$(subst lib,,$(LIB_NAME))
@@ -80,8 +80,8 @@ SHARED_TARGET := $(LIB_DIR)/$(LIB_NAME).so
 SHARED_DBG_TARGET := $(LIB_DIR)/$(DBG_LIB_NAME).so
 
 ##Test binary target names
-TEST_TARGET := $(BIN_DIR)/TestLogger
-TEST_DBG_TARGET := $(BIN_DIR)/TestLogger_d
+TEST_TARGET := $(BIN_DIR)/TestThreadPool
+TEST_DBG_TARGET := $(BIN_DIR)/TestThreadPool_d
 
 ifeq ($(BUILD_TYPE), release)
 all: release	##Build release version of the library only
