@@ -1,0 +1,50 @@
+# Prerequisites
+*.d
+
+# Compiled Object files
+*.slo
+*.lo
+*.o
+*.obj
+
+# Precompiled Headers
+*.gch
+*.pch
+
+# Compiled Dynamic libraries
+*.so
+*.dylib
+*.dll
+
+# Fortran module files
+*.mod
+*.smod
+
+# Compiled Static libraries
+*.lai
+*.la
+*.a
+*.lib
+
+# Executables
+*.exe
+*.out
+*.app
+
+# Log and text files
+*.Log
+*.txt
+
+## Ignore IDE specific files
+.vscode/
+
+##Ignore build specific files
+bin/
+obj/
+lib/
+__pycache__/
+.pytest_cache/
+
+## Ignore build specific files
+*.dSYM
+.DS_Store
