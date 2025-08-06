@@ -26,8 +26,8 @@ LIB_DIR := lib
 TEST_DIR := tests
 
 ##Conditional variables for the makefile
-BUILD_TYPE ?= release
-BUILD_TEST ?= no
+BUILD_TYPE ?= debug
+BUILD_TEST ?= yes
 LIB_TYPE ?= static
 
 ##Compiler flags
