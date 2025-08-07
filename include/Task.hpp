@@ -42,9 +42,11 @@ namespace t_pool
                 m_task = std::move(packagedTask);
                 m_taskId = nextTaskId();
             }
+
         protected:
             inline void setTaskName(std::string_view taskName) noexcept { m_taskName = taskName; }
             inline std::string getTaskName() const noexcept { return m_taskName; }
+
         private:
             std::packaged_task<std::any()> m_task;
             std::future<std::any> m_future;
