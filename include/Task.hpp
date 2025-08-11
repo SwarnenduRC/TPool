@@ -20,6 +20,11 @@ namespace t_pool
             Task() = default;
 
             inline int getTaskId() const { return m_taskId; }
+            inline std::future<std::any> getTaskFuture() { return std::move(m_future); }
+            inline std::function<void()> toFunction()
+            {
+                return [this]() mutable { this->runAndForget(); };
+            }
 
             template <typename F, typename ...Args>
             void submit(F&& f, Args&& ...)
@@ -41,6 +46,25 @@ namespace t_pool
                 m_future = packagedTask.get_future();
                 m_task = std::move(packagedTask);
                 m_taskId = nextTaskId();
+            }
+
+            std::any run()
+            {
+                if (m_task.valid())
+                {
+                    m_task();
+                    auto result = m_future.get();
+                    return result;
+                }
+                return std::any{};
+            }
+
+            void runAndForget()
+            {
+                if (m_task.valid())
+                {
+                    m_task();
+                }
             }
 
         protected:
