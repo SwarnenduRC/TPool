@@ -166,12 +166,12 @@ endif
 ifeq ($(LIB_TYPE), static)
 $(TEST_TARGET) : $(TEST_OBJS) | $(BIN_DIR)
 	@echo "Linking release test build...."
-	$(CXX) $(CXXFLAGS_TEST) $^ -lgtest -lpthread $(LD_FLAGS) -o $@
+	$(CXX) $(CXXFLAGS_TEST) $^ -lgtest -lpthread -llogger -o $@
 	@echo "Linking release test build completed"
 
 $(TEST_DBG_TARGET) : $(DBG_TEST_OBJS) | $(BIN_DIR)
 	@echo "Linking debug test build...."
-	$(CXX) $(CXXFLAGS_TEST) $^ -lgtest -lpthread $(LDD_FLAGS) -o $@
+	$(CXX) $(CXXFLAGS_TEST) $^ -lgtest -lpthread -llogger -o $@
 	@echo "Linking debug test build completed"
 
 $(TEST_OBJ_DIR)/%.o: $(TEST_DIR)/%.cpp | $(TEST_OBJ_DIR)
@@ -188,12 +188,12 @@ $(TEST_OBJ_DIR)/%_d.o: $(TEST_DIR)/%.cpp | $(TEST_OBJ_DIR)
 else ifeq ($(LIB_TYPE), shared)
 $(TEST_TARGET) : $(TEST_OBJS) | $(BIN_DIR)
 	@echo "Linking release test build...."
-	$(CXX) $(CXXFLAGS_TEST) $^ -lgtest -lpthread $(LD_FLAGS) -o $@
+	$(CXX) $(CXXFLAGS_TEST) $^ -lgtest -lpthread -llogger -o $@
 	@echo "Linking release test build completed"
 
 $(TEST_DBG_TARGET) : $(DBG_TEST_OBJS) | $(BIN_DIR)
 	@echo "Linking debug test build...."
-	$(CXX) $(CXXFLAGS_TEST) $^ -lgtest -lpthread $(LDD_FLAGS) -o $@
+	$(CXX) $(CXXFLAGS_TEST) $^ -lgtest -lpthread -llogger -o $@
 	@echo "Linking debug test build completed"
 
 $(TEST_OBJ_DIR)/%.o: $(TEST_DIR)/%.cpp | $(TEST_OBJ_DIR)

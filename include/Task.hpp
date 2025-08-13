@@ -16,7 +16,13 @@ namespace t_pool
     class Task
     {
         public:
-            static int nextTaskId() noexcept;
+            static int nextTaskId() noexcept
+            {
+                LOG_ENTRY_DBG();
+                static std::atomic<int> taskCnt(0);
+                return taskCnt.fetch_add(1);
+                LOG_EXIT_DBG();
+            }
             Task() = default;
 
             inline int getTaskId() const { return m_taskId; }
@@ -31,7 +37,8 @@ namespace t_pool
             {
                 using Result = std::invoke_result_t<F, Args...>;
                 auto boundFunc = std::bind(std::forward<F>(f), std::forward<Args>()...);
-                std::packaged_task<std::any()> packagedTask = [boundFunc]() -> std::any
+                std::packaged_task<std::any(Args...)> packagedTask(
+                [boundFunc]() -> std::any
                 {
                     if constexpr (std::is_void_v<Result>)
                     {
@@ -42,7 +49,7 @@ namespace t_pool
                     {
                         return boundFunc();
                     }
-                };
+                });
                 m_future = packagedTask.get_future();
                 m_task = std::move(packagedTask);
                 m_taskId = nextTaskId();
@@ -50,21 +57,25 @@ namespace t_pool
 
             std::any run()
             {
+                LOG_ENTRY_DBG();
                 if (m_task.valid())
                 {
                     m_task();
                     auto result = m_future.get();
                     return result;
                 }
+                LOG_EXIT_DBG();
                 return std::any{};
             }
 
             void runAndForget()
             {
+                LOG_ENTRY_DBG();
                 if (m_task.valid())
                 {
                     m_task();
                 }
+                LOG_EXIT_DBG();
             }
 
         protected:
