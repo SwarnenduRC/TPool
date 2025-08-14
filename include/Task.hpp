@@ -18,10 +18,8 @@ namespace t_pool
         public:
             static int nextTaskId() noexcept
             {
-                LOG_ENTRY_DBG();
                 static std::atomic<int> taskCnt(0);
                 return taskCnt.fetch_add(1);
-                LOG_EXIT_DBG();
             }
             Task() = default;
 
@@ -32,12 +30,28 @@ namespace t_pool
                 return [this]() mutable { this->runAndForget(); };
             }
 
+            /**
+             * @brief Submits a callable task with arguments to be executed asynchronously.
+             *
+             * This template method accepts any callable object (function, lambda, functor) and its arguments,
+             * binds them together, and wraps the invocation in a std::packaged_task that returns a std::any.
+             * The result type is deduced using std::invoke_result_t. If the callable returns void, an empty
+             * std::any is returned; otherwise, the result is returned as std::any.
+             *
+             * The future associated with the packaged task is stored in m_future, and the packaged task itself
+             * is stored in m_task for later execution. A unique task ID is assigned via nextTaskId().
+             *
+             * @tparam F Type of the callable object.
+             * @tparam Args Types of the arguments to pass to the callable.
+             * @param f The callable object to execute.
+             * @param args Arguments to pass to the callable object.
+             */
             template <typename F, typename ...Args>
-            void submit(F&& f, Args&& ...)
+            void submit(F&& f, Args&&... args)
             {
                 using Result = std::invoke_result_t<F, Args...>;
-                auto boundFunc = std::bind(std::forward<F>(f), std::forward<Args>()...);
-                std::packaged_task<std::any(Args...)> packagedTask(
+                auto boundFunc = std::bind(std::forward<F>(f), std::forward<Args>(args)...);
+                std::packaged_task<std::any()> packagedTask(
                 [boundFunc]() -> std::any
                 {
                     if constexpr (std::is_void_v<Result>)
@@ -58,14 +72,14 @@ namespace t_pool
             std::any run()
             {
                 LOG_ENTRY_DBG();
+                std::any result;
                 if (m_task.valid())
                 {
                     m_task();
-                    auto result = m_future.get();
-                    return result;
+                    result = m_future.get();
                 }
                 LOG_EXIT_DBG();
-                return std::any{};
+                return result;
             }
 
             void runAndForget()
