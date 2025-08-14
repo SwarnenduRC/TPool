@@ -15,8 +15,7 @@ class TaskTests : public ::testing::Test
     public:
         static void voidFunc()
         {
-            LOG_ENTRY_DBG();
-            LOG_DBG("Calling a void function with no arguments");
+            LOG_ENTRY_DBG("Calling a void function with no arguments");
             LOG_EXIT_DBG();
         }
 };
@@ -24,7 +23,16 @@ class TaskTests : public ::testing::Test
 TEST_F(TaskTests, testSubmittingVoidFuncWithNoArgs)
 {
     LocalTask task;
-    //task.setTaskName("TestVoidTask");
+    task.setTaskName("TestVoidTask");
     task.submit(voidFunc);
+    task.run();
+}
+
+TEST_F(TaskTests, testSubmittingVoidFunctorWithNoArgs)
+{
+    LocalTask task;
+    task.setTaskName("TestVoidFunctorTask");
+    std::function<void()> voidFunctor = voidFunc;
+    task.submit(voidFunctor);
     task.run();
 }

@@ -77,8 +77,6 @@ namespace t_pool
                 }
                 LOG_EXIT_DBG();
             }
-
-        protected:
             inline void setTaskName(std::string_view taskName) noexcept { m_taskName = taskName; }
             inline std::string getTaskName() const noexcept { return m_taskName; }
 
