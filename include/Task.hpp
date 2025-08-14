@@ -4,6 +4,7 @@
 #include <logger/LOGGER_MACROS.hpp>
 
 #include <future>
+#include <functional>
 #include <type_traits>
 #include <any>
 #include <utility>
@@ -103,3 +104,4 @@ namespace t_pool
 };   // namespace t_pool
 
 #endif  // TASK_HPP
+
