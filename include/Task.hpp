@@ -47,11 +47,11 @@ namespace t_pool
              * @param f The callable object to execute.
              * @param args Arguments to pass to the callable object.
              *
-             * @note Please keep in mind that the return type of the callable must be copyable,
+             * @note Please keep in mind that the return and argument types of the callable must be copyable,
              * as it will be stored in a packaged_task.
              * What it means is either you can have premitive types or types that have copy constructor defined.
              * Or, a derived class that implements the copy constructor. Move semantics are not supported here
-             * for return types. So use std shared_ptr in place of unique_ptr or raw pointers.
+             * for return and arguments types. So use std shared_ptr in place of unique_ptr or raw pointers.
              */
             template <typename F, typename ...Args>
             void submit(F&& f, Args&&... args)

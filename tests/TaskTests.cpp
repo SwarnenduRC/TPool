@@ -1,3 +1,4 @@
+
 //leaks --atExit --list -- ./bin/TestThreadPool_d --gtest_shuffle --gtest_repeat=3 --gtest_filter="TaskTests.*"
 
 #include "Task.hpp"
@@ -13,19 +14,19 @@ class LocalTask : public Task
 class TaskTests : public ::testing::Test
 {
     public:
-        static void voidFunc()
+        static void voidFunc() noexcept
         {
             LOG_ENTRY_DBG("Calling a void function with no arguments");
             LOG_EXIT_DBG();
         }
-        static void voidFuncWithArgs(const std::string& arg1, const std::string& arg2)
+        static void voidFuncWithArgs(const std::string& arg1, const std::string& arg2) noexcept
         {
             LOG_ENTRY_DBG("Calling a void function with arguments");
             LOG_DBG("First argument = {}", arg1);
             LOG_DBG("Second argument = {}", arg2);
             LOG_EXIT_DBG();
         }
-        static int nonVoidFunc()
+        static int nonVoidFunc() noexcept
         {
             LOG_ENTRY_DBG("Calling nonVoidFunc");
             auto retVal = 10;
@@ -35,17 +36,38 @@ class TaskTests : public ::testing::Test
         // Unique pointer is not allowed as a return type
         // because it cannot be copied into a packaged_task.
         // So, we use shared_ptr instead.
-        static std::shared_ptr<int> nonVoidFunc1()
+        static std::shared_ptr<int> nonVoidFunc1() noexcept
         {
             LOG_ENTRY_DBG("Calling nonVoidFunc1");
             auto retVal = 10;
             LOG_EXIT_DBG();
             return std::make_shared<int>(retVal);
         }
-        static int* nonVoidFunc2()
+        static int* nonVoidFunc2() noexcept
         {
             LOG_ENTRY_DBG("Calling nonVoidFunc2");
             static std::unique_ptr<int> retVal = std::make_unique<int>(10);
+            LOG_EXIT_DBG();
+            return retVal.get();
+        }
+        static int* nonVoidFunc3(const int val, const int* pVal) noexcept
+        {
+            LOG_ENTRY_DBG("Calling nonVoidFunc3");
+            static std::unique_ptr<int> retVal = std::make_unique<int>(val * *pVal);
+            LOG_EXIT_DBG();
+            return retVal.get();
+        }
+        static int* nonVoidFunc4(const int val, std::shared_ptr<int> pVal) noexcept
+        {
+            LOG_ENTRY_DBG("Calling nonVoidFunc4");
+            static std::unique_ptr<int> retVal = std::make_unique<int>(val * *pVal);
+            LOG_EXIT_DBG();
+            return retVal.get();
+        }
+        static int* nonVoidFunc5(const int val, const std::shared_ptr<int>& pVal) noexcept
+        {
+            LOG_ENTRY_DBG("Calling nonVoidFunc5");
+            static std::unique_ptr<int> retVal = std::make_unique<int>(val * *pVal);
             LOG_EXIT_DBG();
             return retVal.get();
         }
@@ -136,6 +158,69 @@ TEST_F(TaskTests, testSubmittingNonVoidFunc)
             task.submit(nonVoidFunctorWithZeroArgs);
             auto result = task.run();
             EXPECT_EQ(10, *(std::any_cast<std::shared_ptr<int>>(result))) << *(std::any_cast<std::shared_ptr<int>>(result));
+        }
+    }
+    {
+        {
+            LocalTask task;
+            task.setTaskName("nonVoidFunc3");
+            auto val = 10;
+            std::unique_ptr<int> pVal = std::make_unique<int>(10);
+            task.submit(nonVoidFunc3, val, pVal.get());
+            auto result = task.run();
+            EXPECT_EQ(100, *std::any_cast<int*>(result)) << *(std::any_cast<int*>(result));
+        }
+        {
+            LocalTask task;
+            task.setTaskName("nonVoidFunc3");
+            std::function<int*(const int val, const int* pVal)> nonVoidFunctorWithZeroArgs = nonVoidFunc3;
+            auto val = 10;
+            std::unique_ptr<int> pVal = std::make_unique<int>(10);
+            task.submit(nonVoidFunctorWithZeroArgs, val, pVal.get());
+            auto result = task.run();
+            EXPECT_EQ(100, *std::any_cast<int*>(result)) << *(std::any_cast<int*>(result));
+        }
+    }
+    {
+        {
+            LocalTask task;
+            task.setTaskName("nonVoidFunc4");
+            auto val = 10;
+            std::shared_ptr<int> pVal = std::make_shared<int>(10);
+            task.submit(nonVoidFunc4, val, pVal);
+            auto result = task.run();
+            EXPECT_EQ(100, *std::any_cast<int*>(result)) << *(std::any_cast<int*>(result));
+        }
+        {
+            LocalTask task;
+            task.setTaskName("nonVoidFunc4");
+            std::function<int*(const int val, std::shared_ptr<int> pVal)> nonVoidFunctorWithZeroArgs = nonVoidFunc4;
+            auto val = 10;
+            std::shared_ptr<int> pVal = std::make_shared<int>(10);
+            task.submit(nonVoidFunctorWithZeroArgs, val, pVal);
+            auto result = task.run();
+            EXPECT_EQ(100, *std::any_cast<int*>(result)) << *(std::any_cast<int*>(result));
+        }
+    }
+    {
+        {
+            LocalTask task;
+            task.setTaskName("nonVoidFunc5");
+            auto val = 10;
+            std::shared_ptr<int> pVal = std::make_shared<int>(10);
+            task.submit(nonVoidFunc5, val, pVal);
+            auto result = task.run();
+            EXPECT_EQ(100, *std::any_cast<int*>(result)) << *(std::any_cast<int*>(result));
+        }
+        {
+            LocalTask task;
+            task.setTaskName("nonVoidFunc5");
+            std::function<int*(const int val, const std::shared_ptr<int> pVal)> nonVoidFunctorWithZeroArgs = nonVoidFunc5;
+            auto val = 10;
+            std::shared_ptr<int> pVal = std::make_shared<int>(10);
+            task.submit(nonVoidFunctorWithZeroArgs, val, pVal);
+            auto result = task.run();
+            EXPECT_EQ(100, *std::any_cast<int*>(result)) << *(std::any_cast<int*>(result));
         }
     }
 }
