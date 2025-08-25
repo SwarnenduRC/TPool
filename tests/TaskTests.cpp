@@ -1,5 +1,6 @@
 
 //leaks --atExit --list -- ./bin/TestThreadPool_d --gtest_shuffle --gtest_repeat=3 --gtest_filter="TaskTests.*"
+//leaks --atExit --list -- ./bin/TestThreadPool_d --gtest_shuffle --gtest_repeat=3 --gtest_filter=TaskTests.testSubmittingVariousLambdas
 
 #include "Task.hpp"
 
@@ -222,5 +223,53 @@ TEST_F(TaskTests, testSubmittingNonVoidFunc)
             auto result = task.run();
             EXPECT_EQ(100, *std::any_cast<int*>(result)) << *(std::any_cast<int*>(result));
         }
+    }
+}
+
+TEST_F(TaskTests, testSubmittingVariousLambdas)
+{
+    {
+        auto voidFuncZeroArgs = []()
+        {
+            LOG_ENTRY_DBG("Calling a lambda void func with no args");
+            LOG_EXIT_DBG();
+        };
+
+        auto nonVoidFuncZeroArgs = []() -> std::any
+        {
+            LOG_ENTRY_DBG("Calling a lambda non void func with no args");
+            LOG_EXIT_DBG();
+            return 0;
+        };
+
+        auto nonVoidFuncWithArgs = [](const std::shared_ptr<int>& val1, int* val2) -> std::shared_ptr<int>
+        {
+            LOG_ENTRY_DBG("Calling a lambda non void func with two args");
+            LOG_EXIT_DBG();
+            return std::make_shared<int>(*val1.get() * *val2);
+        };
+
+        auto nonVoidFuncWithArgs2 = [this](const std::shared_ptr<int>& val1, int* val2)
+        {
+            return this->nonVoidFunc5(*val2, val1);
+        };
+
+        LocalTask task;
+        task.submit(voidFuncZeroArgs);
+        task.run();
+
+        task.submit(nonVoidFuncZeroArgs);
+        auto result = task.run();
+        EXPECT_EQ(0, std::any_cast<int>(result));
+
+        auto val1 = std::make_shared<int>(10);
+        auto val2 = std::make_unique<int>(100);
+        task.submit(nonVoidFuncWithArgs, val1, val2.get());
+        result = task.run();
+        EXPECT_EQ(1000, *std::any_cast<std::shared_ptr<int>>(result));
+
+        task.submit(nonVoidFuncWithArgs2, val1, val2.get());
+        result = task.run();
+        EXPECT_EQ(1000, *std::any_cast<int*>(result));
     }
 }
