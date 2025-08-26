@@ -207,9 +207,8 @@ TEST_F(TaskTests, testSubmittingNonVoidFunc)
         {
             LocalTask task;
             task.setTaskName("nonVoidFunc5");
-            auto val = 10;
             std::shared_ptr<int> pVal = std::make_shared<int>(10);
-            task.submit(nonVoidFunc5, val, pVal);
+            task.submit(nonVoidFunc5, *pVal, pVal);
             auto result = task.run();
             EXPECT_EQ(100, *std::any_cast<int*>(result)) << *(std::any_cast<int*>(result));
         }
@@ -217,9 +216,8 @@ TEST_F(TaskTests, testSubmittingNonVoidFunc)
             LocalTask task;
             task.setTaskName("nonVoidFunc5");
             std::function<int*(const int val, const std::shared_ptr<int> pVal)> nonVoidFunctorWithZeroArgs = nonVoidFunc5;
-            auto val = 10;
             std::shared_ptr<int> pVal = std::make_shared<int>(10);
-            task.submit(nonVoidFunctorWithZeroArgs, val, pVal);
+            task.submit(nonVoidFunctorWithZeroArgs, *pVal, pVal);
             auto result = task.run();
             EXPECT_EQ(100, *std::any_cast<int*>(result)) << *(std::any_cast<int*>(result));
         }
@@ -249,11 +247,6 @@ TEST_F(TaskTests, testSubmittingVariousLambdas)
             return std::make_shared<int>(*val1.get() * *val2);
         };
 
-        auto nonVoidFuncWithArgs2 = [this](const std::shared_ptr<int>& val1, int* val2)
-        {
-            return this->nonVoidFunc5(*val2, val1);
-        };
-
         LocalTask task;
         task.submit(voidFuncZeroArgs);
         task.run();
@@ -267,9 +260,72 @@ TEST_F(TaskTests, testSubmittingVariousLambdas)
         task.submit(nonVoidFuncWithArgs, val1, val2.get());
         result = task.run();
         EXPECT_EQ(1000, *std::any_cast<std::shared_ptr<int>>(result));
+    }
+}
 
-        task.submit(nonVoidFuncWithArgs2, val1, val2.get());
-        result = task.run();
-        EXPECT_EQ(1000, *std::any_cast<int*>(result));
+TEST_F(TaskTests, testRunAndForget)
+{
+    {
+        {
+            LocalTask task;
+            task.setTaskName("nonVoidFunc");
+            task.submit(nonVoidFunc);
+            task.runAndForget();
+            auto result = task.getTaskFuture();
+            if (result.valid())
+                EXPECT_EQ(10, std::any_cast<int>(result.get())) << (std::any_cast<int>(result.get()));
+        }
+        {
+            LocalTask task;
+            task.setTaskName("nonVoidFunc");
+            std::function<int()> nonVoidFunctorWithZeroArgs = nonVoidFunc;
+            task.submit(nonVoidFunctorWithZeroArgs);
+            task.runAndForget();
+            auto result = task.getTaskFuture();
+            if (result.valid())
+                EXPECT_EQ(10, std::any_cast<int>(result.get())) << (std::any_cast<int>(result.get()));
+        }
+    }
+    {
+        {
+            LocalTask task;
+            task.setTaskName("nonVoidFunc2");
+            task.submit(nonVoidFunc2);
+            task.runAndForget();
+            auto result = task.getTaskFuture();
+            if (result.valid())
+                EXPECT_EQ(10, *(std::any_cast<int*>(result.get()))) << *(std::any_cast<int*>(result.get()));
+        }
+        {
+            LocalTask task;
+            task.setTaskName("nonVoidFunc2");
+            std::function<int*()> nonVoidFunctorWithZeroArgs = nonVoidFunc2;
+            task.submit(nonVoidFunctorWithZeroArgs);
+            task.runAndForget();
+            auto result = task.getTaskFuture();
+            if (result.valid())
+                EXPECT_EQ(10, *(std::any_cast<int*>(result.get()))) << *(std::any_cast<int*>(result.get()));
+        }
+    }
+    {
+        {
+            LocalTask task;
+            task.setTaskName("nonVoidFunc1");
+            task.submit(nonVoidFunc1);
+            task.runAndForget();
+            auto result = task.getTaskFuture();
+            if (result.valid())
+                EXPECT_EQ(10, *std::any_cast<std::shared_ptr<int>>(result.get())) << *(std::any_cast<std::shared_ptr<int>>(result.get()));
+        }
+        {
+            LocalTask task;
+            task.setTaskName("nonVoidFunc1");
+            std::function<std::shared_ptr<int>()> nonVoidFunctorWithZeroArgs = nonVoidFunc1;
+            task.submit(nonVoidFunctorWithZeroArgs);
+            task.runAndForget();
+            auto result = task.getTaskFuture();
+            if (result.valid())
+                EXPECT_EQ(10, *std::any_cast<std::shared_ptr<int>>(result.get())) << *(std::any_cast<std::shared_ptr<int>>(result.get()));
+        }
     }
 }
