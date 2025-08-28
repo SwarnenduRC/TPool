@@ -370,6 +370,19 @@ TEST_F(TaskTests, testRunAndForget)
     }
 }
 
+TEST_F(TaskTests, testSubmittingFunctors)
+{
+    int* (*functor)(const int val, std::shared_ptr<int> pVal);
+    functor = &nonVoidFunc4;
+
+    auto val = 10;
+    std::shared_ptr<int> pVal = std::make_shared<int>(10);
+    LocalTask task;
+    task.submit(functor, val, pVal);
+    auto result = task.run();
+    EXPECT_EQ(val * *pVal, *std::any_cast<int*>(result)) << *(std::any_cast<int*>(result));
+}
+
 TEST_F(TaskTests, testToFunction)
 {
     {
