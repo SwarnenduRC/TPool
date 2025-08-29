@@ -118,7 +118,6 @@ TEST_F(TaskTests, testSubmittingVoidFuncWithNoArgs)
 {
     {
         LocalTask task;
-        task.setTaskName("TestVoidTask");
         task.submit(voidFunc);
         task.run();
     }
@@ -135,13 +134,11 @@ TEST_F(TaskTests, testSubmittingVoidFunctorWithArgs)
 {
     {
         LocalTask task;
-        task.setTaskName("TestVoidTaskWithArgs");
         task.submit(voidFuncWithArgs, "Google", "Test");
         task.run();
     }
     {
         LocalTask task;
-        task.setTaskName("TestVoidFunctorWithArgsTask");
         std::function<void(const std::string& arg1, const std::string& arg2)> voidFunctorWithArgs = voidFuncWithArgs;
         task.submit(voidFunctorWithArgs, "Google", "Test");
         task.run();
@@ -153,14 +150,12 @@ TEST_F(TaskTests, testSubmittingNonVoidFunc)
     {
         {
             LocalTask task;
-            task.setTaskName("nonVoidFunc");
             task.submit(nonVoidFunc);
             auto result = task.run();
             EXPECT_EQ(10, std::any_cast<int>(result)) << (std::any_cast<int>(result));
         }
         {
             LocalTask task;
-            task.setTaskName("nonVoidFunc");
             std::function<int()> nonVoidFunctorWithZeroArgs = nonVoidFunc;
             task.submit(nonVoidFunctorWithZeroArgs);
             auto result = task.run();
@@ -177,7 +172,6 @@ TEST_F(TaskTests, testSubmittingNonVoidFunc)
         }
         {
             LocalTask task;
-            task.setTaskName("nonVoidFunc2");
             std::function<int*()> nonVoidFunctorWithZeroArgs = nonVoidFunc2;
             task.submit(nonVoidFunctorWithZeroArgs);
             auto result = task.run();
@@ -187,14 +181,12 @@ TEST_F(TaskTests, testSubmittingNonVoidFunc)
     {
         {
             LocalTask task;
-            task.setTaskName("nonVoidFunc1");
             task.submit(nonVoidFunc1);
             auto result = task.run();
             EXPECT_EQ(10, *std::any_cast<std::shared_ptr<int>>(result)) << *(std::any_cast<std::shared_ptr<int>>(result));
         }
         {
             LocalTask task;
-            task.setTaskName("nonVoidFunc1");
             std::function<std::shared_ptr<int>()> nonVoidFunctorWithZeroArgs = nonVoidFunc1;
             task.submit(nonVoidFunctorWithZeroArgs);
             auto result = task.run();
@@ -204,7 +196,6 @@ TEST_F(TaskTests, testSubmittingNonVoidFunc)
     {
         {
             LocalTask task;
-            task.setTaskName("nonVoidFunc3");
             auto val = 10;
             std::unique_ptr<int> pVal = std::make_unique<int>(10);
             task.submit(nonVoidFunc3, val, pVal.get());
@@ -213,7 +204,6 @@ TEST_F(TaskTests, testSubmittingNonVoidFunc)
         }
         {
             LocalTask task;
-            task.setTaskName("nonVoidFunc3");
             std::function<int*(const int val, const int* pVal)> nonVoidFunctorWithZeroArgs = nonVoidFunc3;
             auto val = 10;
             std::unique_ptr<int> pVal = std::make_unique<int>(10);
@@ -225,7 +215,6 @@ TEST_F(TaskTests, testSubmittingNonVoidFunc)
     {
         {
             LocalTask task;
-            task.setTaskName("nonVoidFunc4");
             auto val = 10;
             std::shared_ptr<int> pVal = std::make_shared<int>(10);
             task.submit(nonVoidFunc4, val, pVal);
@@ -234,7 +223,6 @@ TEST_F(TaskTests, testSubmittingNonVoidFunc)
         }
         {
             LocalTask task;
-            task.setTaskName("nonVoidFunc4");
             std::function<int*(const int val, std::shared_ptr<int> pVal)> nonVoidFunctorWithZeroArgs = nonVoidFunc4;
             auto val = 10;
             std::shared_ptr<int> pVal = std::make_shared<int>(10);
@@ -246,7 +234,6 @@ TEST_F(TaskTests, testSubmittingNonVoidFunc)
     {
         {
             LocalTask task;
-            task.setTaskName("nonVoidFunc5");
             std::shared_ptr<int> pVal = std::make_shared<int>(10);
             task.submit(nonVoidFunc5, *pVal, pVal);
             auto result = task.run();
@@ -254,7 +241,6 @@ TEST_F(TaskTests, testSubmittingNonVoidFunc)
         }
         {
             LocalTask task;
-            task.setTaskName("nonVoidFunc5");
             std::function<int*(const int val, const std::shared_ptr<int> pVal)> nonVoidFunctorWithZeroArgs = nonVoidFunc5;
             std::shared_ptr<int> pVal = std::make_shared<int>(10);
             task.submit(nonVoidFunctorWithZeroArgs, *pVal, pVal);
@@ -308,7 +294,6 @@ TEST_F(TaskTests, testRunAndForget)
     {
         {
             LocalTask task;
-            task.setTaskName("nonVoidFunc");
             task.submit(nonVoidFunc);
             task.runAndForget();
             auto result = task.getTaskFuture();
@@ -317,7 +302,6 @@ TEST_F(TaskTests, testRunAndForget)
         }
         {
             LocalTask task;
-            task.setTaskName("nonVoidFunc");
             std::function<int()> nonVoidFunctorWithZeroArgs = nonVoidFunc;
             task.submit(nonVoidFunctorWithZeroArgs);
             task.runAndForget();
@@ -329,7 +313,6 @@ TEST_F(TaskTests, testRunAndForget)
     {
         {
             LocalTask task;
-            task.setTaskName("nonVoidFunc2");
             task.submit(nonVoidFunc2);
             task.runAndForget();
             auto result = task.getTaskFuture();
@@ -338,7 +321,6 @@ TEST_F(TaskTests, testRunAndForget)
         }
         {
             LocalTask task;
-            task.setTaskName("nonVoidFunc2");
             std::function<int*()> nonVoidFunctorWithZeroArgs = nonVoidFunc2;
             task.submit(nonVoidFunctorWithZeroArgs);
             task.runAndForget();
@@ -350,7 +332,6 @@ TEST_F(TaskTests, testRunAndForget)
     {
         {
             LocalTask task;
-            task.setTaskName("nonVoidFunc1");
             task.submit(nonVoidFunc1);
             task.runAndForget();
             auto result = task.getTaskFuture();
@@ -359,7 +340,6 @@ TEST_F(TaskTests, testRunAndForget)
         }
         {
             LocalTask task;
-            task.setTaskName("nonVoidFunc1");
             std::function<std::shared_ptr<int>()> nonVoidFunctorWithZeroArgs = nonVoidFunc1;
             task.submit(nonVoidFunctorWithZeroArgs);
             task.runAndForget();
@@ -388,7 +368,6 @@ TEST_F(TaskTests, testToFunction)
     {
         {
             LocalTask task;
-            task.setTaskName("nonVoidFunc");
             task.submit(nonVoidFunc);
             auto function = task.toFunction();
             function();
@@ -398,7 +377,7 @@ TEST_F(TaskTests, testToFunction)
         }
         {
             LocalTask task;
-            task.setTaskName("nonVoidFunc");
+            //task.setTaskName("nonVoidFunc");
             std::function<int()> nonVoidFunctorWithZeroArgs = nonVoidFunc;
             task.submit(nonVoidFunctorWithZeroArgs);
             auto function = task.toFunction();
@@ -411,7 +390,6 @@ TEST_F(TaskTests, testToFunction)
     {
         {
             LocalTask task;
-            task.setTaskName("nonVoidFunc2");
             task.submit(nonVoidFunc2);
             auto function = task.toFunction();
             function();
@@ -421,7 +399,6 @@ TEST_F(TaskTests, testToFunction)
         }
         {
             LocalTask task;
-            task.setTaskName("nonVoidFunc2");
             std::function<int*()> nonVoidFunctorWithZeroArgs = nonVoidFunc2;
             task.submit(nonVoidFunctorWithZeroArgs);
             auto function = task.toFunction();
@@ -434,7 +411,6 @@ TEST_F(TaskTests, testToFunction)
     {
         {
             LocalTask task;
-            task.setTaskName("nonVoidFunc1");
             task.submit(nonVoidFunc1);
             auto function = task.toFunction();
             function();
@@ -444,7 +420,6 @@ TEST_F(TaskTests, testToFunction)
         }
         {
             LocalTask task;
-            task.setTaskName("nonVoidFunc1");
             std::function<std::shared_ptr<int>()> nonVoidFunctorWithZeroArgs = nonVoidFunc1;
             task.submit(nonVoidFunctorWithZeroArgs);
             auto function = task.toFunction();
