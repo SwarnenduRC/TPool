@@ -33,10 +33,10 @@ namespace t_pool
             std::mutex m_taskQueueMtx = {};
             /**
              * @brief A queue of tasks.
-             * The queue holds the tasks to be executed by
-             * the threads in the pool.
+             * The queue holds the tasks and its respective id
+             * to be executed by the threads in the pool.
              */
-            std::queue<std::pair<std::function<void()>, std::string>> m_taskQueue;
+            std::queue<std::pair<std::function<void()>, uint32_t>> m_taskQueue;
             /**
              * @brief An atomic variable to indicate if the worker
              * threads should continue running/picking up the tasks

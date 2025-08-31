@@ -40,39 +40,6 @@ using namespace logger;
 
 namespace t_pool
 {
-    // ---- Utility to demangle types ----
-    inline std::string demangle(const char* name) {
-        int status = 0;
-        char* demangled = abi::__cxa_demangle(name, nullptr, nullptr, &status);
-        std::string result = (status == 0) ? demangled : name;
-        std::free(demangled);
-        return result;
-    }
-
-    template <typename T>
-    std::string type_name() {
-        return demangle(typeid(T).name());
-    }
-
-    // ---- Special case: free function name extraction ----
-    template <typename R, typename... Args>
-    std::string function_name(R(*f)(Args...)) {
-    #if defined(__clang__) || defined(__GNUC__)
-        std::string sig = __PRETTY_FUNCTION__;
-        // __PRETTY_FUNCTION__ looks like:
-        // "std::string function_name(R (*)(Args...)) [with R = int; Args = {int, double}]"
-        auto pos = sig.find("R (*f)(");
-        if (pos != std::string::npos) {
-            // fallback if parsing works badly
-            return typeid(f).name();
-        }
-        return sig;
-    #elif defined(_MSC_VER)
-        return __FUNCSIG__;
-    #else
-        return "unknown_function";
-    #endif
-    }
     /**
      * @class Task
      * @brief Represents a unit of work that can be executed asynchronously and tracked via a unique task ID.
@@ -99,9 +66,9 @@ namespace t_pool
              * 
              * @return int The next unique task ID.
              */
-            static int nextTaskId() noexcept
+            static uint32_t nextTaskId() noexcept
             {
-                static std::atomic<int> taskCnt(0);
+                static std::atomic<uint32_t> taskCnt(0);
                 return taskCnt.fetch_add(1);
             }
 
@@ -157,18 +124,7 @@ namespace t_pool
             template <typename F, typename ...Args>
             void submit(F&& f, Args&&... args)
             {
-                std::string taskName;
-                if constexpr (std::is_pointer_v<F> && std::is_function_v<std::remove_pointer_t<F>>)
-                {
-                    // Free function pointer
-                    taskName = function_name(f);
-                }
-                else
-                {
-                    // Lambda, functor, or std::function
-                    taskName = type_name<F>();
-                }
-                LOG_ENTRY_DBG(/*"Submitting task {}", taskName*/);
+                LOG_ENTRY_DBG();
                 using Result = std::invoke_result_t<F, Args...>;
                 auto boundFunc = std::bind(std::forward<F>(f), std::forward<Args>(args)...);
                 // Wrap the bound function in a packaged_task that returns std::any
@@ -191,8 +147,7 @@ namespace t_pool
                 m_future = packagedTask.get_future();
                 m_task = std::move(packagedTask);
                 m_taskId = nextTaskId();
-                m_taskName = taskName;
-                LOG_EXIT_DBG(/*"Task {} submitted successfully", m_taskName*/);
+                LOG_EXIT_DBG();
             }
 
             /**
@@ -251,11 +206,11 @@ namespace t_pool
         private:
             std::packaged_task<std::any()> m_task;
             std::future<std::any> m_future;
-            static int m_taskId;
+            static uint32_t m_taskId;
             std::string m_taskName;
     };
 
-    /*static*/ int Task::m_taskId = -1;
+    /*static*/ uint32_t Task::m_taskId = 0;
 
 };   // namespace t_pool
 
