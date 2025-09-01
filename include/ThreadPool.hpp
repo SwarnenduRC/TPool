@@ -10,7 +10,13 @@ namespace t_pool
         using ui32 = std::uint_fast32_t;
         using ui64 = std::uint_fast64_t;
 
+        public:
+
         private:
+            void worker();
+            bool popTask(std::pair<std::function<void()>, uint32_t>& task);
+            void sleepOrYield();
+            void createThreads();
             /**
              * @brief An uinque pointer to manage threads in the pool
              */
