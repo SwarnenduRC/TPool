@@ -11,22 +11,25 @@ namespace t_pool
         using ui64 = std::uint_fast64_t;
 
         public:
-
+            ThreadPool();
+            ~ThreadPool();
         private:
             void worker();
             bool popTask(std::pair<std::function<void()>, uint32_t>& task);
             void sleepOrYield();
             void createThreads();
-            /**
-             * @brief An uinque pointer to manage threads in the pool
-             */
-            std::unique_ptr<std::thread[]> m_pThreads;
+            void destroyThreads();
+            void waitForTaskCompletion();
             /**
              * @brief The size of the thread pool.
              * By default it is max allowed on the system
              * denoted by std::thread::hardware_concurrency()
              */
             ui32 m_poolSize = std::thread::hardware_concurrency();
+            /**
+             * @brief An uinque pointer to manage threads in the pool
+             */
+            std::unique_ptr<std::thread[]> m_pThreads;
             /**
              * @brief The no. of tasks still unfinished
              * The no. of tasks either in the queue or
@@ -42,7 +45,7 @@ namespace t_pool
              * The queue holds the tasks and its respective id
              * to be executed by the threads in the pool.
              */
-            std::queue<std::pair<std::function<void()>, uint32_t>> m_taskQueue;
+            std::queue<std::pair<std::function<void()>, uint32_t>> m_taskQueue = {};
             /**
              * @brief An atomic variable to indicate if the worker
              * threads should continue running/picking up the tasks

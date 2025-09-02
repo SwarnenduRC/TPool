@@ -34,7 +34,6 @@
 #include <any>
 #include <utility>
 #include <atomic>
-#include <cxxabi.h>
 
 using namespace logger;
 
