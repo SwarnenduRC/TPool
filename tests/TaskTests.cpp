@@ -377,7 +377,6 @@ TEST_F(TaskTests, testToFunction)
         }
         {
             LocalTask task;
-            //task.setTaskName("nonVoidFunc");
             std::function<int()> nonVoidFunctorWithZeroArgs = nonVoidFunc;
             task.submit(nonVoidFunctorWithZeroArgs);
             auto function = task.toFunction();
@@ -428,5 +427,27 @@ TEST_F(TaskTests, testToFunction)
             if (result.valid())
                 EXPECT_EQ(10, *std::any_cast<std::shared_ptr<int>>(result.get())) << *(std::any_cast<std::shared_ptr<int>>(result.get()));
         }
+    }
+}
+
+TEST_F(TaskTests, testFutureExcp)
+{
+    {
+        LocalTask task;
+        std::function<std::shared_ptr<int>()> nonVoidFunctorWithZeroArgs = nonVoidFunc1;
+        task.submit(nonVoidFunctorWithZeroArgs);
+        auto result = task.getTaskFuture();
+        auto function = task.toFunction();
+        function();
+        if (result.valid())
+            EXPECT_EQ(10, *std::any_cast<std::shared_ptr<int>>(result.get())) << *(std::any_cast<std::shared_ptr<int>>(result.get()));
+    }
+    {
+        LocalTask task;
+        std::function<void(const std::string& arg1, const std::string& arg2)> voidFunctorWithArgs = voidFuncWithArgs;
+        task.submit(voidFunctorWithArgs, "Google", "Test");
+        auto result = task.getTaskFuture();
+        auto function = task.toFunction();
+        function();
     }
 }

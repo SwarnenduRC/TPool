@@ -123,7 +123,7 @@ namespace t_pool
             template <typename F, typename ...Args>
             void submit(F&& f, Args&&... args)
             {
-                LOG_ENTRY_DBG();
+                //LOG_ENTRY_DBG();
                 using Result = std::invoke_result_t<F, Args...>;
                 auto boundFunc = std::bind(std::forward<F>(f), std::forward<Args>(args)...);
                 // Wrap the bound function in a packaged_task that returns std::any
@@ -146,7 +146,7 @@ namespace t_pool
                 m_future = packagedTask.get_future();
                 m_task = std::move(packagedTask);
                 m_taskId = nextTaskId();
-                LOG_EXIT_DBG();
+                //LOG_EXIT_DBG();
             }
 
             /**
@@ -160,14 +160,14 @@ namespace t_pool
              */
             std::any run()
             {
-                LOG_ENTRY_DBG();
+                //LOG_ENTRY_DBG();
                 std::any result;
                 if (m_task.valid())
                 {
                     m_task();
                     result = m_future.get();
                 }
-                LOG_EXIT_DBG();
+                //LOG_EXIT_DBG();
                 return result;
             }
 
@@ -180,12 +180,12 @@ namespace t_pool
              */
             void runAndForget()
             {
-                LOG_ENTRY_DBG();
+                //LOG_ENTRY_DBG();
                 if (m_task.valid())
                 {
                     m_task();
                 }
-                LOG_EXIT_DBG();
+                //LOG_EXIT_DBG();
             }
 
             /**
@@ -205,11 +205,9 @@ namespace t_pool
         private:
             std::packaged_task<std::any()> m_task;
             std::future<std::any> m_future;
-            static uint32_t m_taskId;
+            inline static uint32_t m_taskId = 0;
             std::string m_taskName;
     };
-
-    /*static*/ uint32_t Task::m_taskId = 0;
 
 };   // namespace t_pool
 
