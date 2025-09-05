@@ -5,21 +5,148 @@
 
 namespace t_pool
 {
+    using ui32 = std::uint_fast32_t;
+    using ui64 = std::uint_fast64_t;
     class ThreadPool
     {
-        using ui32 = std::uint_fast32_t;
-        using ui64 = std::uint_fast64_t;
-
         public:
-            ThreadPool();
-            ~ThreadPool();
+            ThreadPool()
+                : m_poolSize(std::thread::hardware_concurrency())
+                , m_pThreads(std::make_unique<std::thread[]>(m_poolSize))
+                , m_taskCntTotal(0)
+                , m_taskRunning(true)
+                , m_pause(false)
+            {
+                createThreads();
+            }
+
+            ThreadPool(const ui32 poolSize)
+                : m_poolSize(poolSize)
+                , m_pThreads(std::make_unique<std::thread[]>(m_poolSize))
+                , m_taskCntTotal(0)
+                , m_taskRunning(true)
+                , m_pause(false)
+            {
+                createThreads();
+            }
+
+            ~ThreadPool()
+            {
+                waitForTaskCompletion();
+                m_taskRunning = false;
+                destroyThreads();
+            }
+
+            void reset(const ui32 newPoolSize);
+
+            inline ui32 getTaskRunningCnt() noexcept 
+                { return static_cast<ui32>(m_taskCntTotal - getTaskQueued()); }
+            inline ui64 getTotalTaskCnt() const noexcept { return m_taskCntTotal; }
+            ui64 getTaskQueued() noexcept
+            {
+                std::lock_guard<std::mutex> queueLock(m_taskQueueMtx);
+                return m_taskQueue.size();
+            }
+
+            template<typename F, typename ...A>
+            std::future<std::any> submit(F&& func, A&& ...args)
+            {
+                auto pTask = std::make_shared<Task>();
+                pTask->submit(std::forward<F>(func), std::forward<A>(args)...);
+                m_taskQueue.emplace(pTask);
+                ++m_taskCntTotal;
+                return pTask->getTaskFuture();
+            }
+
         private:
-            void worker();
-            bool popTask(std::pair<std::function<void()>, uint32_t>& task);
-            void sleepOrYield();
-            void createThreads();
-            void destroyThreads();
-            void waitForTaskCompletion();
+            void worker()
+            {
+                while (m_taskRunning)
+                {
+                    std::shared_ptr<Task> pTask;
+                    if (!m_pause && popTask(pTask))
+                    {
+                        //if (pTask)
+                        {
+                            auto taskFunc = pTask->toFunction();
+                            //auto taskId = pTask->getTaskId();
+                            /* LOG_DBG("Task(ID) {:d} is now going to be executed by the thread {:d}",
+                                taskId, std::hash<std::thread::id>{}(std::this_thread::get_id())); */
+
+                            taskFunc();
+                            --m_taskCntTotal;
+
+                            /* LOG_DBG("Task(ID) {:d} execution completed now by the thread {:d}",
+                                taskId, std::hash<std::thread::id>{}(std::this_thread::get_id())); */
+                        }
+                    }
+                    else
+                    {
+                        sleepOrYield();
+                    }
+                }
+            }
+            bool popTask(std::shared_ptr<Task>& pTask)
+            {
+                if (!m_pause)
+                {
+                    std::lock_guard<std::mutex> lock(m_taskQueueMtx);
+                    if (!m_pause && !m_taskQueue.empty())
+                    {
+                        /* LOG_DBG("Task with task ID {:d} popped up from the queue by the thread {:#16x}",
+                            m_taskQueue.front()->getTaskId(), 
+                            std::hash<std::thread::id>{}(std::this_thread::get_id())); */
+                        pTask = m_taskQueue.front();
+                        m_taskQueue.pop();
+                        return true;
+                    }
+                }
+                return false;
+            }
+            void waitForTaskCompletion()
+            {
+                while (true)
+                {
+                    if (!m_pause)
+                    {
+                        if (getTotalTaskCnt() == 0)
+                            break;
+                    }
+                    else
+                    {
+                        if (getTaskRunningCnt() == 0)
+                            break;
+                    }
+                    sleepOrYield();
+                }
+            }
+            void createThreads()
+            {
+                if (m_poolSize)
+                {
+                    for (ui32 idx = 0; idx < m_poolSize; ++idx)
+                        m_pThreads[idx] = std::thread(&ThreadPool::worker, this);
+                }
+                else
+                {
+                    LOG_ASSERT_MSG(m_poolSize > 0, "Thread pool size {:d} nor defined", m_poolSize);
+                }
+            }
+            void destroyThreads()
+            {
+                for (ui32 idx = 0; idx < m_poolSize; ++idx)
+                {
+                    if (m_pThreads[idx].joinable())
+                        m_pThreads[idx].join();
+                }
+            }
+            void sleepOrYield()
+            {
+                if (m_sleepDuration)
+                    std::this_thread::sleep_for(std::chrono::microseconds(m_sleepDuration));
+                else
+                    std::this_thread::yield();
+            }
             /**
              * @brief The size of the thread pool.
              * By default it is max allowed on the system
@@ -45,7 +172,7 @@ namespace t_pool
              * The queue holds the tasks and its respective id
              * to be executed by the threads in the pool.
              */
-            std::queue<std::pair<std::function<void()>, uint32_t>> m_taskQueue = {};
+            std::queue<std::shared_ptr<Task>> m_taskQueue;
             /**
              * @brief An atomic variable to indicate if the worker
              * threads should continue running/picking up the tasks
