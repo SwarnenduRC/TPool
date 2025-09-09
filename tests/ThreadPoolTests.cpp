@@ -9,9 +9,9 @@ class ThreadPoolTests : public ::testing::Test
     public:
         static void voidFunc() noexcept
         {
-            //LOG_ENTRY_DBG("Calling a void function with no arguments");
+            LOG_ENTRY_DBG("Calling a void function with no arguments");
             sleepFor();
-            //LOG_EXIT_DBG();
+            LOG_EXIT_DBG();
         }
         static void voidFuncWithArgs(const std::string& arg1, const std::string& arg2) noexcept
         {

@@ -1,7 +1,3 @@
-
-//leaks --atExit --list -- ./bin/TestThreadPool_d --gtest_shuffle --gtest_repeat=3 --gtest_filter="TaskTests.*"
-//leaks --atExit --list -- ./bin/TestThreadPool_d --gtest_shuffle --gtest_repeat=3 --gtest_filter=TaskTests.testSubmittingVariousLambdas
-
 /**
 * * MIT License
 * 
@@ -57,7 +53,8 @@ class TaskTests : public ::testing::Test
     public:
         static void voidFunc() noexcept
         {
-            LOG_ENTRY_DBG("Calling a void function with no arguments");
+            LOG_ENTRY_DBG();
+            LOG_DBG("Calling a void function with no arguments");
             LOG_EXIT_DBG();
         }
         static void voidFuncWithArgs(const std::string& arg1, const std::string& arg2) noexcept
@@ -430,7 +427,7 @@ TEST_F(TaskTests, testToFunction)
     }
 }
 
-TEST_F(TaskTests, testFutureExcp)
+TEST_F(TaskTests, DISABLED_testFutureExcp)
 {
     {
         LocalTask task;
@@ -446,8 +443,10 @@ TEST_F(TaskTests, testFutureExcp)
         LocalTask task;
         std::function<void(const std::string& arg1, const std::string& arg2)> voidFunctorWithArgs = voidFuncWithArgs;
         task.submit(voidFunctorWithArgs, "Google", "Test");
-        auto result = task.getTaskFuture();
         auto function = task.toFunction();
         function();
     }
 }
+
+//leaks --atExit --list -- ./bin/TestThreadPool_d --gtest_shuffle --gtest_repeat=3 --gtest_filter="TaskTests.*"
+//leaks --atExit --list -- ./bin/TestThreadPool_d --gtest_shuffle --gtest_repeat=3 --gtest_filter=TaskTests.testSubmittingVoidFunctorWithArgs

@@ -66,18 +66,20 @@ namespace t_pool
                     std::shared_ptr<Task> pTask;
                     if (!m_pause && popTask(pTask))
                     {
-                        //if (pTask)
+                        if (pTask.get())
                         {
                             auto taskFunc = pTask->toFunction();
-                            //auto taskId = pTask->getTaskId();
-                            /* LOG_DBG("Task(ID) {:d} is now going to be executed by the thread {:d}",
-                                taskId, std::hash<std::thread::id>{}(std::this_thread::get_id())); */
+                            auto taskId = pTask->getTaskId();
+                            std::ostringstream oss;
+                            oss << std::this_thread::get_id();
+                            LOG_DBG("Task(ID) {:d} is now going to be executed by the thread {}",
+                                taskId, oss.str());
 
                             taskFunc();
                             --m_taskCntTotal;
 
-                            /* LOG_DBG("Task(ID) {:d} execution completed now by the thread {:d}",
-                                taskId, std::hash<std::thread::id>{}(std::this_thread::get_id())); */
+                            LOG_DBG("Task(ID) {:d} execution completed now by the thread {}",
+                                taskId, oss.str());
                         }
                     }
                     else
@@ -93,9 +95,11 @@ namespace t_pool
                     std::lock_guard<std::mutex> lock(m_taskQueueMtx);
                     if (!m_pause && !m_taskQueue.empty())
                     {
-                        /* LOG_DBG("Task with task ID {:d} popped up from the queue by the thread {:#16x}",
+                        std::ostringstream oss;
+                        oss << std::this_thread::get_id();
+                        LOG_DBG("Task with task ID {:d} popped up from the queue by the thread {}",
                             m_taskQueue.front()->getTaskId(), 
-                            std::hash<std::thread::id>{}(std::this_thread::get_id())); */
+                            oss.str());
                         pTask = m_taskQueue.front();
                         m_taskQueue.pop();
                         return true;
