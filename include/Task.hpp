@@ -77,7 +77,7 @@ namespace t_pool
              * 
              * @return int The next unique task ID.
              */
-            static int getTaskId() noexcept { return m_taskId; }
+            int getTaskId() noexcept { return m_taskId; }
 
             /**
              * @brief Get the Task Future object
@@ -143,9 +143,9 @@ namespace t_pool
                         return boundFunc();
                     }
                 });
+                m_taskId.store(nextTaskId());
                 m_future = packagedTask.get_future();
                 m_task = std::move(packagedTask);
-                m_taskId = nextTaskId();
                 LOG_EXIT_DBG();
             }
 
@@ -205,7 +205,7 @@ namespace t_pool
         private:
             std::packaged_task<std::any()> m_task;
             std::future<std::any> m_future;
-            inline static uint32_t m_taskId = 0;
+            std::atomic<uint32_t> m_taskId = 0;
             std::string m_taskName;
     };
 

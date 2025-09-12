@@ -242,6 +242,84 @@ TEST_F(ThreadPoolTests, testSubmittingFuncsThroughStdFuncObject)
     }
 }
 
+TEST_F(ThreadPoolTests, testSubmittingFunctors)
+{
+    void (*voidFunctor)() = &voidFunc;
+    getPoolObject().submit(voidFunctor);
+
+    int (*nonVoidFunctor)() = &nonVoidFunc;
+    auto result = getPoolObject().submit(nonVoidFunctor);
+    if (result.valid())
+        EXPECT_EQ(10, std::any_cast<int>(result.get())) << (std::any_cast<int>(result.get()));
+    else
+        EXPECT_TRUE(false) << "result is not valid\n";
+
+    void (*voidFunctorWithArgs)(const std::string&, const std::string&) = &voidFuncWithArgs;
+    getPoolObject().submit(voidFunctorWithArgs, "Google", "Test");
+
+    std::shared_ptr<int>(*nonVoidFunctor1)() = &nonVoidFunc1;
+    result = getPoolObject().submit(nonVoidFunctor1);
+    if (result.valid())
+    {
+        EXPECT_EQ(10, *(std::any_cast<std::shared_ptr<int>>(result.get())))
+            << *(std::any_cast<std::shared_ptr<int>>(result.get()));
+    }
+    else
+    {
+        EXPECT_TRUE(false) << "result is not valid\n";
+    }
+
+    int* (*nonVoidFunctor2)() = &nonVoidFunc2;
+    result = getPoolObject().submit(nonVoidFunctor2);
+    if (result.valid())
+    {
+        EXPECT_EQ(10, *(std::any_cast<int*>(result.get())))
+            << *(std::any_cast<int*>(result.get()));
+    }
+    else
+    {
+        EXPECT_TRUE(false) << "result is not valid\n";
+    }
+
+    auto val1 = 100;
+    auto val2 = std::make_shared<int>(10);
+    int* (*nonVoidFunctor3)(const int, const int*) = &nonVoidFunc3;
+    result = getPoolObject().submit(nonVoidFunctor3, val1, val2.get());
+    if (result.valid())
+    {
+        EXPECT_EQ((val1 * *val2), *(std::any_cast<int*>(result.get())))
+            << *(std::any_cast<int*>(result.get()));
+    }
+    else
+    {
+        EXPECT_TRUE(false) << "result is not valid\n";
+    }
+
+    int* (*nonVoidFunctor4)(const int, const std::shared_ptr<int>) = &nonVoidFunc4;
+    result = getPoolObject().submit(nonVoidFunctor4, val1, val2);
+    if (result.valid())
+    {
+        EXPECT_EQ((val1 * *val2), *(std::any_cast<int*>(result.get())))
+            << *(std::any_cast<int*>(result.get()));
+    }
+    else
+    {
+        EXPECT_TRUE(false) << "result is not valid\n";
+    }
+
+    int* (*nonVoidFunctor5)(const int, const std::shared_ptr<int>&) = &nonVoidFunc5;
+    result = getPoolObject().submit(nonVoidFunctor5, val1, val2);
+    if (result.valid())
+    {
+        EXPECT_EQ((val1 * *val2), *(std::any_cast<int*>(result.get())))
+            << *(std::any_cast<int*>(result.get()));
+    }
+    else
+    {
+        EXPECT_TRUE(false) << "result is not valid\n";
+    }
+}
+
 TEST_F(ThreadPoolTests, testSubmittingLambdas)
 {
     auto voidLambda = []()

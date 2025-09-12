@@ -81,17 +81,20 @@ namespace t_pool
                         if (pTask.get())
                         {
                             auto taskFunc = pTask->toFunction();
+#if defined (DEBUG) || (__DEBUG__)
                             auto taskId = pTask->getTaskId();
                             std::ostringstream oss;
                             oss << std::this_thread::get_id();
                             LOG_DBG("Task(ID) {:d} is now going to be executed by the thread {}",
                                 taskId, oss.str());
+#endif
 
                             taskFunc();
                             --m_taskCntTotal;
-
+#if defined (DEBUG) || (__DEBUG__)
                             LOG_DBG("Task(ID) {:d} execution completed now by the thread {}",
                                 taskId, oss.str());
+#endif
                         }
                     }
                     else
@@ -107,11 +110,13 @@ namespace t_pool
                     std::lock_guard<std::mutex> lock(m_taskQueueMtx);
                     if (!m_pause && !m_taskQueue.empty())
                     {
+#if defined (DEBUG) || (__DEBUG__)
                         std::ostringstream oss;
                         oss << std::this_thread::get_id();
                         LOG_DBG("Task with task ID {:d} popped up from the queue by the thread {}",
                             m_taskQueue.front()->getTaskId(), 
                             oss.str());
+#endif
                         pTask = m_taskQueue.front();
                         m_taskQueue.pop();
                         return true;
@@ -145,7 +150,7 @@ namespace t_pool
                 }
                 else
                 {
-                    LOG_ASSERT_MSG(m_poolSize > 0, "Thread pool size {:d} nor defined", m_poolSize);
+                    LOG_ASSERT_MSG(m_poolSize > 0, "Thread pool size {:d} not defined", m_poolSize);
                 }
             }
             void destroyThreads()
