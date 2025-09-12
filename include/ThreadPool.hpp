@@ -53,7 +53,9 @@ namespace t_pool
 
             inline ui32 getTaskRunningCnt() noexcept 
                 { return static_cast<ui32>(m_taskCntTotal - getTaskQueued()); }
+
             inline ui64 getTotalTaskCnt() const noexcept { return m_taskCntTotal; }
+
             ui64 getTaskQueued() noexcept
             {
                 std::lock_guard<std::mutex> queueLock(m_taskQueueMtx);
@@ -145,6 +147,7 @@ namespace t_pool
             {
                 if (m_poolSize)
                 {
+                    m_pThreads = std::make_unique<std::thread[]>(m_poolSize);
                     for (ui32 idx = 0; idx < m_poolSize; ++idx)
                         m_pThreads[idx] = std::thread(&ThreadPool::worker, this);
                 }
