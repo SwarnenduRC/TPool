@@ -448,5 +448,29 @@ TEST_F(TaskTests, DISABLED_testFutureExcp)
     }
 }
 
+TEST_F(TaskTests, testMove)
+{
+    {
+        LocalTask task;
+        std::function<std::shared_ptr<int>()> nonVoidFunctorWithZeroArgs = nonVoidFunc1;
+        task.submit(nonVoidFunctorWithZeroArgs);
+
+        Task moveTask(std::move(task));
+        auto result = moveTask.getTaskFuture();
+        auto function = moveTask.toFunction();
+        function();
+        if (result.valid())
+            EXPECT_EQ(10, *std::any_cast<std::shared_ptr<int>>(result.get())) << *(std::any_cast<std::shared_ptr<int>>(result.get()));
+    }
+    {
+        LocalTask task;
+        std::function<void(const std::string& arg1, const std::string& arg2)> voidFunctorWithArgs = voidFuncWithArgs;
+        task.submit(voidFunctorWithArgs, "Google", "Test");
+        Task moveTask(std::move(task));
+        auto function = moveTask.toFunction();
+        function();
+    }
+}
+
 //leaks --atExit --list -- ./bin/TestThreadPool_d --gtest_shuffle --gtest_repeat=3 --gtest_filter="TaskTests.*"
 //leaks --atExit --list -- ./bin/TestThreadPool_d --gtest_shuffle --gtest_repeat=3 --gtest_filter=TaskTests.testSubmittingVoidFunctorWithArgs

@@ -60,6 +60,24 @@ namespace t_pool
     class Task
     {
         public:
+            /** Default constructor and destructor */
+            Task() = default;
+            ~Task() = default;
+
+            /**
+             * @brief Move constructor to transfer ownership of a Task.
+             * 
+             * @param rhs The Task instance to move from.
+             */
+            Task(Task&& rhs)
+            {
+                m_task = std::move(rhs.m_task);
+                m_future = std::move(rhs.m_future);
+                m_taskName = std::move(rhs.m_taskName);
+                m_taskId.store(rhs.m_taskId);
+                rhs.m_taskId.store(0);
+            }
+
             /**
              * @brief Generates a unique task ID in a thread-safe manner.
              * 
