@@ -466,8 +466,9 @@ TEST_F(TaskTests, testMove)
         LocalTask task;
         std::function<void(const std::string& arg1, const std::string& arg2)> voidFunctorWithArgs = voidFuncWithArgs;
         task.submit(voidFunctorWithArgs, "Google", "Test");
-        Task moveTask(std::move(task));
-        auto function = moveTask.toFunction();
+        auto pTask = std::shared_ptr<Task>(new Task(std::move(task)));
+        //Task moveTask(std::move(task));
+        auto function = pTask->toFunction();
         function();
     }
 }
