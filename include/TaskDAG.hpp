@@ -19,7 +19,6 @@ namespace t_pool
             Task_As_DAG& removeDependency(Task&& task);
         private:
             bool removeDependencyRecurs(const uint32_t taskId);
-            //std::tuple<TASK_MAP::iterator&, 
             std::shared_ptr<Task> m_task;
             std::future<std::any> m_taskFuture;
             TASK_GRAPH m_taskGraph;

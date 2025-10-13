@@ -296,6 +296,8 @@ TEST_F(TaskTests, testRunAndForget)
             auto result = task.getTaskFuture();
             if (result.valid())
                 EXPECT_EQ(10, std::any_cast<int>(result.get())) << (std::any_cast<int>(result.get()));
+            else
+                EXPECT_TRUE(false);
         }
         {
             LocalTask task;
@@ -305,6 +307,8 @@ TEST_F(TaskTests, testRunAndForget)
             auto result = task.getTaskFuture();
             if (result.valid())
                 EXPECT_EQ(10, std::any_cast<int>(result.get())) << (std::any_cast<int>(result.get()));
+            else
+                EXPECT_TRUE(false);
         }
     }
     {
@@ -324,6 +328,8 @@ TEST_F(TaskTests, testRunAndForget)
             auto result = task.getTaskFuture();
             if (result.valid())
                 EXPECT_EQ(10, *(std::any_cast<int*>(result.get()))) << *(std::any_cast<int*>(result.get()));
+            else
+                EXPECT_TRUE(false);
         }
     }
     {
@@ -334,6 +340,8 @@ TEST_F(TaskTests, testRunAndForget)
             auto result = task.getTaskFuture();
             if (result.valid())
                 EXPECT_EQ(10, *std::any_cast<std::shared_ptr<int>>(result.get())) << *(std::any_cast<std::shared_ptr<int>>(result.get()));
+            else
+                EXPECT_TRUE(false);
         }
         {
             LocalTask task;
@@ -343,6 +351,8 @@ TEST_F(TaskTests, testRunAndForget)
             auto result = task.getTaskFuture();
             if (result.valid())
                 EXPECT_EQ(10, *std::any_cast<std::shared_ptr<int>>(result.get())) << *(std::any_cast<std::shared_ptr<int>>(result.get()));
+            else
+                EXPECT_TRUE(false);
         }
     }
 }
@@ -371,6 +381,8 @@ TEST_F(TaskTests, testToFunction)
             auto result = task.getTaskFuture();
             if (result.valid())
                 EXPECT_EQ(10, std::any_cast<int>(result.get())) << (std::any_cast<int>(result.get()));
+            else
+                EXPECT_TRUE(false);
         }
         {
             LocalTask task;
@@ -381,6 +393,8 @@ TEST_F(TaskTests, testToFunction)
             auto result = task.getTaskFuture();
             if (result.valid())
                 EXPECT_EQ(10, std::any_cast<int>(result.get())) << (std::any_cast<int>(result.get()));
+            else
+                EXPECT_TRUE(false);
         }
     }
     {
@@ -392,6 +406,8 @@ TEST_F(TaskTests, testToFunction)
             auto result = task.getTaskFuture();
             if (result.valid())
                 EXPECT_EQ(10, *(std::any_cast<int*>(result.get()))) << *(std::any_cast<int*>(result.get()));
+            else
+                EXPECT_TRUE(false);
         }
         {
             LocalTask task;
@@ -402,6 +418,8 @@ TEST_F(TaskTests, testToFunction)
             auto result = task.getTaskFuture();
             if (result.valid())
                 EXPECT_EQ(10, *(std::any_cast<int*>(result.get()))) << *(std::any_cast<int*>(result.get()));
+            else
+                EXPECT_TRUE(false);
         }
     }
     {
@@ -413,6 +431,8 @@ TEST_F(TaskTests, testToFunction)
             auto result = task.getTaskFuture();
             if (result.valid())
                 EXPECT_EQ(10, *std::any_cast<std::shared_ptr<int>>(result.get())) << *(std::any_cast<std::shared_ptr<int>>(result.get()));
+            else
+                EXPECT_TRUE(false);
         }
         {
             LocalTask task;
@@ -423,6 +443,8 @@ TEST_F(TaskTests, testToFunction)
             auto result = task.getTaskFuture();
             if (result.valid())
                 EXPECT_EQ(10, *std::any_cast<std::shared_ptr<int>>(result.get())) << *(std::any_cast<std::shared_ptr<int>>(result.get()));
+            else
+                EXPECT_TRUE(false);
         }
     }
 }
@@ -438,6 +460,8 @@ TEST_F(TaskTests, DISABLED_testFutureExcp)
         function();
         if (result.valid())
             EXPECT_EQ(10, *std::any_cast<std::shared_ptr<int>>(result.get())) << *(std::any_cast<std::shared_ptr<int>>(result.get()));
+        else
+            EXPECT_TRUE(false);
     }
     {
         LocalTask task;
