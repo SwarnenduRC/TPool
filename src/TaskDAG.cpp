@@ -108,6 +108,7 @@ bool TDAG::removeDependencyRecurs(const uint32_t taskId)
             auto& parentTaskIndegree = parentTask->second.second;
             --parentTaskIndegree;
             m_taskIdMap.erase(taskId);
+            retVal = true;
         }
         else
         {
