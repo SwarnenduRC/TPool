@@ -27,11 +27,11 @@ clone_and_install_liblogger() {
         # If the logging is file logging then call the buildNInstall script
         # of the Logger lib with related file attributes
         if [[ "$FILE_LOGGING" == "yes" ]]; then
-            ./buildNInstall.sh -BUILD_TYPE="release" -FILE_LOGGING="$FILE_LOGGING" -FILE_SIZE="$FILE_SIZE" \
+            ./buildNinstall.sh -BUILD_TYPE="release" -FILE_LOGGING="$FILE_LOGGING" -FILE_SIZE="$FILE_SIZE" \
             -FILE_SIZE="$FILE_SIZE" -LOG_FILE_PATH="$LOG_FILE_PATH" -LOG_FILE_NAME="$LOG_FILE_NAME" \
             -LOG_FILE_EXTN="$LOG_FILE_EXTN" -LIB_TYPE="$LIB_TYPE"
         else
-            ./buildNInstall.sh -BUILD_TYPE="release" -LIB_TYPE="$LIB_TYPE"
+            ./buildNinstall.sh -BUILD_TYPE="release" -LIB_TYPE="$LIB_TYPE"
         fi
 
         # Now check if the installation is successful or not
