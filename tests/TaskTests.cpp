@@ -213,7 +213,7 @@ TEST_F(TaskTests, testSubmittingNonVoidFunc)
         {
             LocalTask task;
             auto val = 10;
-            std::shared_ptr<int> pVal = std::make_shared<int>(10);
+            auto pVal = std::make_shared<int>(10);
             task.submit(nonVoidFunc4, val, pVal);
             auto result = task.run();
             EXPECT_EQ(val * *pVal, *std::any_cast<int*>(result)) << *(std::any_cast<int*>(result));
@@ -222,7 +222,7 @@ TEST_F(TaskTests, testSubmittingNonVoidFunc)
             LocalTask task;
             std::function<int*(const int val, std::shared_ptr<int> pVal)> nonVoidFunctorWithZeroArgs = nonVoidFunc4;
             auto val = 10;
-            std::shared_ptr<int> pVal = std::make_shared<int>(10);
+            auto pVal = std::make_shared<int>(10);
             task.submit(nonVoidFunctorWithZeroArgs, val, pVal);
             auto result = task.run();
             EXPECT_EQ(val * *pVal, *std::any_cast<int*>(result)) << *(std::any_cast<int*>(result));
@@ -239,7 +239,7 @@ TEST_F(TaskTests, testSubmittingNonVoidFunc)
         {
             LocalTask task;
             std::function<int*(const int val, const std::shared_ptr<int> pVal)> nonVoidFunctorWithZeroArgs = nonVoidFunc5;
-            std::shared_ptr<int> pVal = std::make_shared<int>(10);
+            auto pVal = std::make_shared<int>(10);
             task.submit(nonVoidFunctorWithZeroArgs, *pVal, pVal);
             auto result = task.run();
             EXPECT_EQ(*pVal * *pVal, *std::any_cast<int*>(result)) << *(std::any_cast<int*>(result));
@@ -363,7 +363,7 @@ TEST_F(TaskTests, testSubmittingFunctors)
     functor = &nonVoidFunc4;
 
     auto val = 10;
-    std::shared_ptr<int> pVal = std::make_shared<int>(10);
+    auto pVal = std::make_shared<int>(10);
     LocalTask task;
     task.submit(functor, val, pVal);
     auto result = task.run();

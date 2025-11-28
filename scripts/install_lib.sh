@@ -6,7 +6,7 @@ HEADER_DIR="include"   # include directory
 
 # Make installation directory variables
 INSTALL_LIB_DIR="/usr/local/lib"
-INSTALL_INCLUDE_DIR="/usr/local/include/logger"
+INSTALL_INCLUDE_DIR="/usr/local/include/tpool"
 
 echo "Installing library to $INSTALL_LIB_DIR"
 echo "Installing headers to $INSTALL_INCLUDE_DIR"
@@ -25,8 +25,8 @@ sudo cp -r "$HEADER_DIR"/* "$INSTALL_INCLUDE_DIR"
 OS_TYPE=$(uname)
 
 # Correct the embedded lib path from relative to absolute path on MacOS only
-if [[ "$OS_TYPE" == "Darwin" ]]; then
-  sudo install_name_tool -id /usr/local/lib/liblogger.so /usr/local/lib/liblogger.so
+if [ "$OS_TYPE" == "Darwin" ] && [ "$LIB_TYPE" == "shared" ]; then
+  sudo install_name_tool -id /usr/local/lib/libtpool.so /usr/local/lib/libtpool.so
 fi
 
 # Update linker cache on Linux (not mandatory but recommended)

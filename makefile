@@ -25,6 +25,18 @@ BIN_DIR := bin
 LIB_DIR := lib
 TEST_DIR := tests
 
+# Type of the external logger library: static or shared
+LIB_LOGGER_TYPE ?= static
+
+LOGGER_INC_DIR := /usr/local/include
+LOGGER_LIB_DIR := /usr/local/lib
+
+ifeq ($(LIB_LOGGER_TYPE), static)
+LOGGER_LDFLAGS := -L$(LOGGER_LIB_DIR) -llogger
+else ifeq ($(LIB_LOGGER_TYPE), shared)
+LOGGER_LDFLAGS := -L$(LOGGER_LIB_DIR) -llogger -Wl,-rpath,$(LOGGER_LIB_DIR)
+endif
+
 ##Conditional variables for the makefile
 BUILD_TYPE ?= debug
 BUILD_TEST ?= yes
@@ -40,6 +52,9 @@ CXXFLAGS_TEST := -std=c++20 -g -Wall -Wextra -Werror -Wno-unused-function -Wpeda
 			-I$(INC_DIR) -I$(TEST_DIR) \
 			$(addprefix -I, $(wildcard $(INC_DIR)/*), $(wildcard $(TEST_DIR)/*))
 
+CXXFLAGS += -I$(LOGGER_INC_DIR)
+CXXFLAGS_TEST += -I$(LOGGER_INC_DIR)
+
 ##Static libraries building flags
 AR_FLAGS := ar
 R_FLAGS := -rcs
@@ -49,8 +64,8 @@ FPIC_FLAG := -fPIC
 SHARED_FLAG := -shared
 
 ##Libraries and LD flags used for linking test binaries
-LIB_NAME := libtppol
-DBG_LIB_NAME := libtppol_d
+LIB_NAME := libtpool
+DBG_LIB_NAME := libtpool_d
 
 ifeq ($(LIB_TYPE), static)	# If it has to be a static lib
 LD_FLAGS := -L$(LIB_DIR) -l$(subst lib,,$(LIB_NAME))
@@ -131,12 +146,12 @@ $(DBG_TARGET) : $(DBG_OBJS) | $(LIB_DIR)
 ##Make shared libraries
 $(SHARED_TARGET) : $(OBJS) | $(LIB_DIR)
 	@echo "Linking release build...."
-	$(CXX) $(SHARED_FLAG) -o $@ $^
+	$(CXX) $(SHARED_FLAG) -o $@ $^ $(LOGGER_LDFLAGS)
 	@echo "Linking release build completed"
 
 $(SHARED_DBG_TARGET) : $(DBG_OBJS) | $(LIB_DIR)
 	@echo "Linking debug build...."
-	$(CXX) $(SHARED_FLAG) -o $@ $^
+	$(CXX) $(SHARED_FLAG) -o $@ $^ $(LOGGER_LDFLAGS)
 	@echo "Linking debug build completed"
 
 ifeq ($(LIB_TYPE), static)	##.a aka static lib making in progress...

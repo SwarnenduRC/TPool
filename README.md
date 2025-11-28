@@ -23,7 +23,12 @@ It is designed to be lightweight, performant, and straightforward to integrate i
 
 ## Features
 
-- TBD
+- You can submit any type of function/method to the thread pool for execution.
+- Supports both synchronous and asynchronous task execution.
+- Configurable number of threads in the pool.
+- Thread-safe task queue management.
+- Graceful shutdown and resource management.
+- Minimal dependencies (only standard C++ libraries).
 
 ## Installation
 
@@ -32,12 +37,33 @@ It is designed to be lightweight, performant, and straightforward to integrate i
 - C++ compiler supporting `C++-20` (e.g., GCC 10+, Clang 10+)
 - make for building the library (currently build process is make based and uses `clang++` for compilation)
 - Google Test framework for running tests (optional, but recommended)
+- Git for cloning the repository (if not already installed) needed for downloading the logger dependency during build.
+- Doxygen for generating documentation (optional)
+- Sudo privileges for installing the library system-wide (also if logger library is not already installed)
+
+#### Cloning and building TPool
 
 Clone the repository:
 
 `git clone https://github.com/SwarnenduRC/TPool.git TPool`
 
-### Build the library and install (manual)
+#### Build the library and install (manual)
+
+##### Cloning and installing Logger library (if not already installed)
+
+> **Note**: While doing automatic installation of TPool using the buildNinstall.sh script, you don't need to manually clone and install the Logger library as mentioned below. The script will take care of downloading and installing the Logger library if it is not already installed on your system.
+
+If you don't have the `Logger` library already installed on your system, you can clone and install it by following these steps:
+
+```bash
+git clone https://github.com/SwarnenduRC/Logger.git
+cd Logger
+./buildNinstall.sh -BUILD_TYPE=release -LIB_TYPE=static -FILE_LOGGING=no
+```
+
+Please refer to the [Logger repository] or run `./buildNinstall.sh -h` in the Logger directory for more details on installation options.
+
+This is required because TPool library uses Logger for logging purposes.
 
 Run the following commands to build the library:
 
@@ -76,22 +102,24 @@ sudo cp -r "$HEADER_DIR"/* "$INSTALL_INCLUDE_DIR"
 You can also run the provided script to install the library automatically:
 
 ```bash
-./buildNinstall.sh -BUILD_TYPE=release -LIB_TYPE=shared -FILE_LOGGING=yes -LOG_FILE_NAME=IntegrationTesting.log
+./buildNinstall.sh -BUILD_TYPE=release -LIB_TYPE=shared -LOGGER_LIB_TYPE=shared -FILE_LOGGING=yes -LOG_FILE_NAME=TPoolTests.log
 ```
 
-Where `buildNinstall.sh` is a script that will build the library and install it to the default locations. You can also pass the following options to the script:
+Where `buildNinstall.sh` is a script that will build the library along with any dependency and install it to the default locations.
+You can also pass the following options to the script:
 
 - `-BUILD_TYPE`: Set the build type (release or debug). Default is release.
 - `-LIB_TYPE`: Set the library type (static or shared). Default is static.
+- `-LOGGER_LIB_TYPE`: Set the Logger library type (static or shared). Default is static.
 - `-FILE_LOGGING`: Enable file logging. Default is no.
 - `-LOG_FILE_NAME`: Set the log file name. Default is Logger.log.
 - `-BUILD_TESTS`: Enable building tests. Default is no.
 
-> **Note**: The script will automatically download and install the `fmt` library if it is not already installed.
+> **Note**: The script will automatically download and install the `Logger` library if it is not already installed.
 > The default installation locations are:
 >
 > - Library files: `/usr/local/lib`
-> - Header files: `/usr/local/include/logger`
+> - Header files: `/usr/local/include/tpool`
 
 For more details on the script, you can run
 
@@ -131,7 +159,7 @@ by running following command:
 
 ## Documentation
 
-For detailed documentation on the Logger library, including API references, configuration options, and examples, please generate the documentation using Doxygen. You can find the Doxygen configuration file in the root directory of the project.
+For detailed documentation on the Tpool library, including API references, configuration options, and examples, please generate the documentation using Doxygen. You can find the Doxygen configuration file in the root directory of the project.
 To generate the documentation, run the following command:
 
 ```bash
@@ -165,4 +193,4 @@ GitHub: [SwarnenduRC](https://github.com/SwarnenduRC)
 
 ---
 
-*Efficient C++ logging made simple. Feel free to open issues for bugs or feature requests.*
+*Efficient C++ thread pooling made simple. Feel free to open issues for bugs or feature requests.*

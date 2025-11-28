@@ -5,11 +5,12 @@ set -e  # Exit immediately if a command exits with a non-zero status
 BUILD_TYPE="release"
 BUILD_TEST="no"
 LIB_TYPE="static"
-FILE_LOGGING="no"
-FILE_SIZE="10MB"
-LOG_FILE_PATH=""
-LOG_FILE_NAME=""
-LOG_FILE_EXTN=""
+export LOGGER_LIB_TYPE="static"
+export FILE_LOGGING="no"
+export FILE_SIZE="10MB"
+export LOG_FILE_PATH=""
+export LOG_FILE_NAME=""
+export LOG_FILE_EXTN=""
 
 print_global_help() {
   cat <<EOF
@@ -25,6 +26,9 @@ Optional arguments (case insensitive):
 
   -LIB_TYPE=<static|shared>      (default: static)
       Type of library to build.
+
+  -LOGGER_LIB_TYPE=<static|shared>  (default: static)
+    The logging library type
 
   -FILE_LOGGING=<yes|no>         (default: no)
       Enable logging to a file (yes) or console (no).
@@ -84,6 +88,14 @@ EOF
   shared    - Build shared libraries.
 EOF
       ;;
+      LOGGER_LIB_TYPE)
+      cat <<EOF
+-LOGGER_LIB_TYPE possible values (case insensitive):
+
+  static    - Attach logger as static library (default).
+  shared    - Attach logger as shared library.
+EOF
+    ;;
     FILE_LOGGING)
       cat <<EOF
 -FILE_LOGGING possible values (case insensitive):
@@ -238,6 +250,15 @@ else
             exit 1
           fi
           ;;
+        LOGGER_LIB_TYPE)
+          if [[ "$value_lower" == "static" || "$value_lower" == "shared" ]]; then
+            LOGGER_LIB_TYPE="$value_lower"
+          else
+            echo "Error: Invalid value for LIB_TYPE: $value"
+            echo "Use -LIB_TYPE --help for valid options."
+            exit 1
+          fi
+          ;;
         FILE_LOGGING)
           if [[ "$value_lower" == "yes" || "$value_lower" == "no" ]]; then
             FILE_LOGGING="$value_lower"
@@ -306,6 +327,7 @@ fi
 echo "BUILD_TYPE=$BUILD_TYPE"
 echo "BUILD_TEST=$BUILD_TEST"
 echo "LIB_TYPE=$LIB_TYPE"
+echo "LOGGER_LIB_TYPE=$LOGGER_LIB_TYPE"
 echo "FILE_LOGGING=$FILE_LOGGING"
 echo "FILE_SIZE=$FILE_SIZE"
 echo "LOG_FILE_PATH=${LOG_FILE_PATH:-<not set>}"
@@ -315,15 +337,15 @@ echo "LOG_FILE_EXTN=${LOG_FILE_EXTN:-<not set>}"
 echo ""
 echo ""
 
-# Generate the enviornment header file now
-python3 ./scripts/generate_env_vars_header.py
-status=$?
-if [[ $status -ne 0 ]]; then
-  echo "Error: Failed to generate environment header file (exit code $status)"
-  exit $status
-fi
+# Install the dependent looger library and its related dependencies
+echo "Going to install dependent logger lib...."
+./scripts/install_logger.sh
 
-echo ""
+if [[ $? -ne 0 ]]; then
+    echo "Logger library installation failed. Can't proceed further"
+    echo "Exiting by marking FAILURE..."
+    exit -1
+fi
 
 # Script to install google test if testing is required
 if [[ "$BUILD_TEST" == "yes" ]]; then
@@ -335,16 +357,6 @@ if [[ "$BUILD_TEST" == "yes" ]]; then
     else
         echo "Google Test installation completed successfully"
     fi
-fi
-
-# Script to install fmt library
-./scripts/install_fmt.sh
-status_fmt=$?
-if [[ $status_fmt -ne 0 ]]; then
-    echo "Error: fmt library installation script failed with exit code $status_fmt"
-    exit $status_fmt
-else
-    echo "fmt library installation completed successfully"
 fi
 
 echo ""
