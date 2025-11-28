@@ -30,11 +30,13 @@ LIB_LOGGER_TYPE ?= static
 
 LOGGER_INC_DIR := /usr/local/include
 LOGGER_LIB_DIR := /usr/local/lib
+RPATH_FLAGS    := -Wl,-rpath,'$$ORIGIN/../lib' \
+                  -Wl,-rpath,$(LOGGER_LIB_DIR)
 
 ifeq ($(LIB_LOGGER_TYPE), static)
 LOGGER_LDFLAGS := -L$(LOGGER_LIB_DIR) -llogger
 else ifeq ($(LIB_LOGGER_TYPE), shared)
-LOGGER_LDFLAGS := -L$(LOGGER_LIB_DIR) -llogger -Wl,-rpath,$(LOGGER_LIB_DIR)
+LOGGER_LDFLAGS := -L$(LOGGER_LIB_DIR) -llogger $(RPATH_FLAGS)
 endif
 
 ##Conditional variables for the makefile
@@ -181,12 +183,12 @@ endif
 ifeq ($(LIB_TYPE), static)
 $(TEST_TARGET) : $(TEST_OBJS) | $(BIN_DIR)
 	@echo "Linking release test build...."
-	$(CXX) $(CXXFLAGS_TEST) $^ -lgtest -lpthread -llogger -o $@
+	$(CXX) $(CXXFLAGS_TEST) $^ -lgtest -lpthread $(LOGGER_LDFLAGS) $(RPATH_FLAGS) -o $@
 	@echo "Linking release test build completed"
 
 $(TEST_DBG_TARGET) : $(DBG_TEST_OBJS) | $(BIN_DIR)
 	@echo "Linking debug test build...."
-	$(CXX) $(CXXFLAGS_TEST) $^ -lgtest -lpthread -llogger -o $@
+	$(CXX) $(CXXFLAGS_TEST) $^ -lgtest -lpthread $(LOGGER_LDFLAGS) $(RPATH_FLAGS) -o $@
 	@echo "Linking debug test build completed"
 
 $(TEST_OBJ_DIR)/%.o: $(TEST_DIR)/%.cpp | $(TEST_OBJ_DIR)
@@ -203,12 +205,12 @@ $(TEST_OBJ_DIR)/%_d.o: $(TEST_DIR)/%.cpp | $(TEST_OBJ_DIR)
 else ifeq ($(LIB_TYPE), shared)
 $(TEST_TARGET) : $(TEST_OBJS) | $(BIN_DIR)
 	@echo "Linking release test build...."
-	$(CXX) $(CXXFLAGS_TEST) $^ -lgtest -lpthread -llogger -o $@
+	$(CXX) $(CXXFLAGS_TEST) $^ -lgtest -lpthread $(LOGGER_LDFLAGS) $(RPATH_FLAGS) -o $@
 	@echo "Linking release test build completed"
 
 $(TEST_DBG_TARGET) : $(DBG_TEST_OBJS) | $(BIN_DIR)
 	@echo "Linking debug test build...."
-	$(CXX) $(CXXFLAGS_TEST) $^ -lgtest -lpthread -llogger -o $@
+	$(CXX) $(CXXFLAGS_TEST) $^ -lgtest -lpthread $(LOGGER_LDFLAGS) $(RPATH_FLAGS) -o $@
 	@echo "Linking debug test build completed"
 
 $(TEST_OBJ_DIR)/%.o: $(TEST_DIR)/%.cpp | $(TEST_OBJ_DIR)
