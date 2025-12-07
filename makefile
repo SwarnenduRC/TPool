@@ -1,6 +1,6 @@
 ###############################################################
-# Makefile for Logger project
-# This makefile is used to build the Logger 
+# Makefile for Tpool project
+# This makefile is used to build the thread pool
 # library and the test binaries in sequential
 # order. The makefile is divided into the
 # following sections:
