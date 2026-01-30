@@ -75,7 +75,9 @@ namespace t_pool
                 m_future = std::move(rhs.m_future);
                 m_taskName = std::move(rhs.m_taskName);
                 m_taskId.store(rhs.m_taskId);
+                m_executed.store(rhs.m_executed);
                 rhs.m_taskId.store(0);
+                rhs.m_executed.store(false);
             }
 
             /**
@@ -164,6 +166,7 @@ namespace t_pool
                 m_taskId.store(nextTaskId());
                 m_future = packagedTask.get_future();
                 m_task = std::move(packagedTask);
+                m_executed.store(false);  // Reset the execution flag for new submission
                 LOG_EXIT_DBG();
             }
 
@@ -173,6 +176,7 @@ namespace t_pool
              * This method runs the task if it has been submitted and is valid. It waits for the task to complete
              * and retrieves the result from the associated future. The result is returned as a std::any.
              * If the task has not been submitted or is invalid, an empty std::any is returned.
+             * Thread-safe: the task will only execute once, even if called concurrently.
              *
              * @return std::any The result of the task execution, or an empty std::any if the task is invalid.
              */
@@ -180,7 +184,7 @@ namespace t_pool
             {
                 LOG_ENTRY_DBG();
                 std::any result;
-                if (m_task.valid())
+                if (m_task.valid() && !m_executed.exchange(true, std::memory_order_acq_rel))
                 {
                     m_task();
                     result = m_future.get();
@@ -194,12 +198,12 @@ namespace t_pool
              *
              * This method runs the task if it has been submitted and is valid. It does not wait for the task
              * to complete or retrieve its result. If the task has not been submitted or is invalid, this method
-             * does nothing.
+             * does nothing. Thread-safe: the task will only execute once, even if called concurrently.
              */
             void runAndForget()
             {
                 LOG_ENTRY_DBG();
-                if (m_task.valid())
+                if (m_task.valid() && !m_executed.exchange(true, std::memory_order_acq_rel))
                 {
                     m_task();
                 }
@@ -225,6 +229,7 @@ namespace t_pool
             std::future<std::any> m_future;
             std::atomic<uint32_t> m_taskId = 0;
             std::string m_taskName;
+            std::atomic<bool> m_executed = false;  // Guard to ensure task executes only once
     };
 
 };   // namespace t_pool

@@ -5,12 +5,12 @@ set -e  # Exit immediately if a command exits with a non-zero status
 BUILD_TYPE="release"
 BUILD_TEST="no"
 LIB_TYPE="static"
-export LOGGER_LIB_TYPE="static"
-export FILE_LOGGING="no"
-export FILE_SIZE="10MB"
-export LOG_FILE_PATH=""
-export LOG_FILE_NAME=""
-export LOG_FILE_EXTN=""
+LOGGER_LIB_TYPE="static"
+FILE_LOGGING="no"
+FILE_SIZE="10MB"
+LOG_FILE_PATH=""
+LOG_FILE_NAME=""
+LOG_FILE_EXTN=""
 
 print_global_help() {
   cat <<EOF
